@@ -3,7 +3,7 @@ const buttonEl = document.getElementById("add_button");
 const taskListEl = document.getElementById("task_list");
 
 buttonEl.addEventListener("click", () => {
-  const value = inputEl.value;
+  const value = inputEl.value.trim();
   const li = document.createElement("li");
   li.innerText = value;
 
