@@ -1,13 +1,17 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import db from './utils/db.js';
+
+// Import all routes
+import router from './routes/user_routes.js';
 
 dotenv.config();
 const app = express();
 
 app.use(
   cors({
-    origin: 'http://localhost:3000',
+    origin: process.env.BASE_URL,
     credentials: true,
     methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -26,6 +30,12 @@ app.get('/', (req, res) => {
 app.get('/afroja', (req, res) => {
   res.send('Hello Afroja gandu!');
 });
+
+// Connect to db
+db();
+
+// User routes
+app.use('api/v1/users/', router);
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
