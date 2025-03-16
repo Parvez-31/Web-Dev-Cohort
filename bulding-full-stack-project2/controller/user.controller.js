@@ -13,7 +13,7 @@ export const userRegister = async (req, res) => {
   // send success status to user
 
   const { name, email, password } = req.body;
-
+  console.log(req.body);
   if (!name || !email || !password) {
     return res.status(400).json({
       message: 'All field are required',
@@ -67,14 +67,26 @@ export const userRegister = async (req, res) => {
 
     await transporter.sendMail(mailOption);
 
-    res.status(201).json({
+    res.status(400).json({
       message: 'User registered successfully',
       success: true,
     });
   } catch (error) {
     res.status(201).json({
       message: 'User not registered',
+      error,
       success: false,
     });
   }
+};
+
+const verifyUser = async (req, res) => {
+  // get token from url
+  // validate
+  // find user based on token
+  // if not
+  // set isVarified field to true
+  // romove verification token
+  // save
+  // return response
 };
