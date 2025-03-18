@@ -1,6 +1,7 @@
 import express from 'express';
 import db from './utils/db.js';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 dotenv.config();
 //Import all routes
@@ -11,7 +12,7 @@ const port = process.env.PORT || 5000;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
+app.use(cookieParser());
 app.use(
   cors({
     origin: process.env.BASE_URL,

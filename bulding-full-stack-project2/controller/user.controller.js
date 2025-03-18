@@ -1,6 +1,8 @@
 import User from '../model/User.model.js';
 import nodemailer from 'nodemailer';
 import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 export const userRegister = async (req, res) => {
   // get data
@@ -67,12 +69,12 @@ export const userRegister = async (req, res) => {
 
     await transporter.sendMail(mailOption);
 
-    res.status(400).json({
+    res.status(201).json({
       message: 'User registered successfully',
       success: true,
     });
   } catch (error) {
-    res.status(201).json({
+    res.status(400).json({
       message: 'User not registered',
       error,
       success: false,
@@ -80,7 +82,7 @@ export const userRegister = async (req, res) => {
   }
 };
 
-const verifyUser = async (req, res) => {
+export const verifyUser = async (req, res) => {
   // get token from url
   // validate
   // find user based on token
@@ -89,4 +91,81 @@ const verifyUser = async (req, res) => {
   // romove verification token
   // save
   // return response
+
+  const { token } = req.params;
+  console.log(token);
+
+  if (!token) {
+    return res.status(400).json({
+      message: 'Invalid token',
+    });
+  }
+
+  const user = await User.findOne({
+    varificationToken: token,
+  });
+
+  if (!user) {
+    return res.status(400).json({
+      message: 'Invalid token',
+    });
+  }
+
+  user.isVarified = true;
+  user.varificationToken = undefined;
+  await user.save();
+};
+
+export const login = async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({
+      message: 'All fields are required',
+    });
+  }
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({
+        message: 'email and password are not matched',
+      });
+    }
+
+    const isMatch = bcrypt.compare(password, user.password);
+    console.log(isMatch);
+
+    if (!isMatch) {
+      return res.status(400).json({
+        message: 'email and password are not matched',
+      });
+    }
+
+    const token = jwt.sign({ id: user._id }, 'shhhhh', { expiresIn: '7d' });
+
+    const cookieOptions = {
+      httpOnly: true,
+      secure: true,
+      maxAge: 24 * 60 * 60 * 1000,
+    };
+
+    res.cookie('token', token, cookieOptions);
+
+    res.status(201).json({
+      success: true,
+      message: 'Login successful',
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    res.status(400).json({
+      message: 'User not Login',
+      error,
+    });
+  }
 };
